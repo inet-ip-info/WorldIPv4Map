@@ -1,8 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 // RIR URLs
@@ -14,14 +16,26 @@ var urls = []string{
 	"https://ftp.afrinic.net/pub/stats/afrinic/delegated-afrinic-extended-latest",
 }
 
+const (
+	CIDRMode       = false
+	SubnetMaskMode = true
+)
+
+type env struct {
+	Mask bool
+}
+
 func main() {
+	var e env
+	envconfig.Process("", &e)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	allCIDRS := map[string][]string{}
 	for _, url := range urls {
 		f, err := OpenURLFile(url)
 		if err != nil {
-			fmt.Println("Error fetching data:", err)
-			continue
+			log.Printf("Error fetching data: url:%s err:%s", url, err)
+			os.Exit(1)
+			//continue
 		}
 		parseIPv4FromRIPsFile(f, allCIDRS)
 		f.Close()
@@ -30,6 +44,20 @@ func main() {
 	allCount := 0
 	mergeCount := 0
 	keys := mapGetSortKeys(allCIDRS)
+	printFunc := map[bool]func(string, string){
+		CIDRMode: func(cc, ip string) {
+			os.Stdout.Write([]byte(cc + "\t" + ip + "\n"))
+		},
+		SubnetMaskMode: func(cc, ip string) {
+			maskip, err := cidrToSubnetMask(ip)
+			if err != nil {
+				log.Printf("cc:%s convert cidr to subnet mask error:%v", cc, err)
+				return
+
+			}
+			os.Stdout.Write([]byte(cc + "\t" + maskip + "\n"))
+		},
+	}[e.Mask]
 	for _, cc := range keys {
 		cidrs := allCIDRS[cc]
 		allCount += len(cidrs)
@@ -45,7 +73,7 @@ func main() {
 				continue
 			}
 			for _, mergeCider := range mergeCiders {
-				fmt.Printf("%s\t%s\n", cc, mergeCider)
+				printFunc(cc, mergeCider)
 			}
 			mergeCount += len(mergeCiders)
 		}

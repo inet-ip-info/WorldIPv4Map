@@ -19,8 +19,17 @@ type IPRange struct {
 	NumHosts int
 }
 
+func cidrToSubnetMask(cidr string) (string, error) {
+	ip, ipv4Net, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", err
+	}
+
+	mask := ipv4Net.Mask
+	return fmt.Sprintf("%s/%d.%d.%d.%d", ip.String(), mask[0], mask[1], mask[2], mask[3]), nil
+}
+
 func parseIPv4FromRIPsFile(r io.Reader, allCIDRS map[string][]string) {
-	cidrs := []string{}
 	scanner := bufio.NewScanner(r)
 	i := 0
 	for scanner.Scan() {
@@ -53,7 +62,7 @@ func parseIPv4FromRIPsFile(r io.Reader, allCIDRS map[string][]string) {
 			return
 		}
 
-		cidrs, err = convertToCIDR(startIP, numHosts)
+		cidrs, err := convertToCIDR(startIP, numHosts)
 		if err != nil {
 			log.Printf("line:%d invalid number of hosts: %v", i, err)
 			continue
