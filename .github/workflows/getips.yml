@@ -17,11 +17,25 @@ jobs:
       with:
         go-version: '1.x'  
 
+    - name: Restore cached Primes
+      id: cache-primes-restore
+      uses: actions/cache/restore@v3
+      with:
+        path: cache
+        key: ${{ runner.os }}-primes
+
     - name: Run script and generate ipv4 tsv file
       run: |
         go build -o ./getipv4 &&
-        ./getipv4|gzip -best> ipv4cidr.tsv.gz &&
-        MASK=true ./getipv4|gzip -best> ipv4mask.tsv.gz
+        ./getipv4|gzip --best> ipv4cidr.tsv.gz &&
+        MASK=true ./getipv4|gzip --best> ipv4mask.tsv.gz
+    
+    - name: Save Primes
+      id: cache-primes-save
+      uses: actions/cache/save@v3
+      with:
+        path: cache
+        key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
 
     - name: Get the current date
       id: date
