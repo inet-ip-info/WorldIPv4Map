@@ -3,10 +3,7 @@ name: Go Test and Coverage
 on: [pull_request]
 
 permissions:
-  contents: write
-  discussions: write
   pull-requests: write
-  issues: write
 
 jobs:
   test:
@@ -22,11 +19,22 @@ jobs:
       run: |
         go test ./... -coverprofile=coverage.txt
         go tool cover -func=coverage.txt
-    - name: Comment PR
+
+    - name: generate diff
+      run: |
+        git diff origin/${{ github.base_ref }}...origin/${{ github.head_ref }} > pr.diff
+
+    - name: compute new code coverage
+      id: covdiffaction
+      uses: panagiotisptr/cov-diff@main
+      with:
+        path: .
+        coverprofile: coverage.txt
+        diff: pr.diff
+        module: github.com/panagiotisptr/cov-diff
+
+    - name: Comment
       uses: mshick/add-pr-comment@v2
       with:
         message: |
-          Test Results:
-          \``` 
-          $(cat coverage.txt)
-          \```
+          Coverage on new code: ${{ steps.covdiffaction.outputs.covdiff }}%
