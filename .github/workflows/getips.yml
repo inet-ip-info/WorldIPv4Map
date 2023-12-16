@@ -3,6 +3,7 @@ name: Daily IPv4 List Release
 on:
   schedule:
     - cron: '0 18 * * *'  # UTC+0900 -> 03:00
+  workflow_dispatch:
 
 jobs:
   build-and-release:
