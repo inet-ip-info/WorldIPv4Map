@@ -5,6 +5,10 @@ on:
     - cron: '0 18 * * *'  # UTC+0900 -> 03:00
   workflow_dispatch:
 
+permissions:
+  contents: write
+  discussions: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
