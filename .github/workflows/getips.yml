@@ -61,8 +61,8 @@ jobs:
         files: |
           all-ipv4cidr.tsv.gz
           all-ipv4mask.tsv.gz
-          jp-ipv4cidr.tsv.gz
-          jp-ipv4mask.tsv.gz
+          jp-ipv4cidr.txt.gz
+          jp-ipv4mask.txt.gz
 
     - uses: sgpublic/delete-release-action@v1.1
       with:
