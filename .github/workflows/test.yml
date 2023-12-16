@@ -1,0 +1,34 @@
+name: Go Test and Coverage
+
+on: [pull_request]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.*'
+    - name: Test and Coverage
+      id: test
+      run: |
+        go test ./... -coverprofile=coverage.txt
+        {
+        echo 'report<<EOF' >> "$GITHUB_OUTPUT"
+        go tool cover -func=coverage.txt
+        echo EOF 
+        } >> "$GITHUB_OUTPUT"
+    - name: Comment PR
+      uses: mshick/add-pr-comment@v2
+      with:
+        message: |
+          Test Results:
+          ``` 
+          ${{ steps.test.outputs.report }}
+          ```

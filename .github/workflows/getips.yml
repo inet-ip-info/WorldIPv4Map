@@ -31,8 +31,11 @@ jobs:
     - name: Run script and generate ipv4 tsv file
       run: |
         go build -o ./getipv4 &&
-        ./getipv4|gzip --best> ipv4cidr.tsv.gz &&
-        MASK=true ./getipv4|gzip --best> ipv4mask.tsv.gz
+        ./getipv4|gzip --best> all-ipv4cidr.tsv.gz &&
+        MASK=true ./getipv4|gzip --best> all-ipv4mask.tsv.gz &&
+        zcat all-ipv4cidr.tsv.gz|sed -n 's/^JP\t//p'|gzip --best>jp-ipv4cidr.txt.gz &&
+        zcat all-ipv4mask.tsv.gz|sed -n 's/^JP\t//p'|gzip --best>jp-ipv4mask.txt.gz
+
     
     - name: Save Primes
       id: cache-primes-save
@@ -43,8 +46,7 @@ jobs:
 
     - name: Get the current date
       id: date
-      # run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      run: echo "date=$(date -u -d '+9 hours' +'%Y-%m-%d')" >> $GITHUB_ENV
 
     - name: Create Release
       id: create_release
@@ -57,8 +59,10 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          ipv4cidr.tsv.gz
-          ipv4mask.tsv.gz
+          all-ipv4cidr.tsv.gz
+          all-ipv4mask.tsv.gz
+          jp-ipv4cidr.tsv.gz
+          jp-ipv4mask.tsv.gz
 
     - uses: sgpublic/delete-release-action@v1.1
       with:
