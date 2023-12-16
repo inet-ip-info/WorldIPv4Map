@@ -19,22 +19,15 @@ jobs:
       run: |
         go test ./... -coverprofile=coverage.txt
         go tool cover -func=coverage.txt
-
-    - name: generate diff
-      run: |
-        git diff origin/${{ github.base_ref }}...origin/${{ github.head_ref }} > pr.diff
-
-    - name: compute new code coverage
-      id: covdiffaction
-      uses: panagiotisptr/cov-diff@main
-      with:
-        path: .
-        coverprofile: coverage.txt
-        diff: pr.diff
-        module: github.com/panagiotisptr/cov-diff
-
-    - name: Comment
+    - name: Plan Terraform
+      id: printcoverage
+      continue-on-error: true
+      run:  cat coverage.txt     
+    - name: Comment PR
       uses: mshick/add-pr-comment@v2
       with:
         message: |
-          Coverage on new code: ${{ steps.covdiffaction.outputs.covdiff }}%
+          Test Results:
+          \``` 
+          ${{ steps.printcoverage.outputs.stdout }}
+          \```
