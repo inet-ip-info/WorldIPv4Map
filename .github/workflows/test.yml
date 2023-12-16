@@ -29,6 +29,6 @@ jobs:
       with:
         message: |
           Test Results:
-          \``` 
+          ``` 
           ${{ steps.test.outputs.report }}
-          \```
+          ```
