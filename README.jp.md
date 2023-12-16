@@ -5,12 +5,7 @@
 
 ## 詳細
 RIR統計ファイルは、地域インターネットレジストリ（[Regional Internet Registry, RIR](https://en.wikipedia.org/wiki/Regional_Internet_registry)）によって提供されるデータファイルで地域毎に公開されています。
-具体的には[こちら]((https://github.com/inet-ip-info/WorldIPv4Map/blob/8981e2c07987fc15be3f005c008b4ec1b960a72b/main.go#L12-L16)に記載しているURLの一覧から取得可能です。
-
-
-
-[こちら記載しているURL](https://github.com/inet-ip-info/WorldIPv4Map/blob/8981e2c07987fc15be3f005c008b4ec1b960a72b/main.go#L12-L16)で地域毎で公開されています。
-
+具体的には[こちら](https://github.com/inet-ip-info/WorldIPv4Map/blob/8981e2c07987fc15be3f005c008b4ec1b960a72b/main.go#L12-L16)に記載しているURLから取得可能です。
 これらのファイルには、国別に割り当てられたIPアドレスの範囲と数が記載されており、それによって各国のインターネットリソース使用状況を確認できます。しかし、元のデータは「開始アドレスからのアドレス数」という形式で、直接的な使用には適していません。このプロジェクトでは、これらのデータをLinuxコマンドなどで扱いやすいCIDR表記（例: 192.168.0.0/24）やサブネットマスク表記（例: 192.168.0.0/255.255.255.0）に変換し、保存しています。
 
 ## 利用方法
