@@ -19,12 +19,14 @@ jobs:
       id: test
       run: |
         go test ./... -coverprofile=coverage.txt
-        go tool cover -func=coverage.txt
+        echo "report<<$EOF" >> "$GITHUB_OUTPUT"
+        go tool cover -func=coverage.txt | tee -a "$GITHUB_OUTPUT"
+        echo "$EOF" >> "$GITHUB_OUTPUT"
     - name: Comment PR
       uses: mshick/add-pr-comment@v2
       with:
         message: |
           Test Results:
           \``` 
-          ${{ steps.test.outputs.stdout }}
+          ${{ steps.test.outputs.report }}
           \```
