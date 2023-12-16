@@ -14,20 +14,17 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: '^1.16'
+        go-version: '1.*'
     - name: Test and Coverage
+      id: test
       run: |
         go test ./... -coverprofile=coverage.txt
         go tool cover -func=coverage.txt
-    - name: Plan Terraform
-      id: printcoverage
-      continue-on-error: true
-      run:  cat coverage.txt     
     - name: Comment PR
       uses: mshick/add-pr-comment@v2
       with:
         message: |
           Test Results:
           \``` 
-          ${{ steps.printcoverage.outputs.stdout }}
+          ${{ steps.test.outputs.stdout }}
           \```
