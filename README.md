@@ -12,6 +12,48 @@ Data can be downloaded from the following URLs.
 - CIDR Notation: [Download(all-ipv4cidr.tsv.gz)](https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/all-ipv4cidr.tsv.gz)
 - Subnet Mask Notation: [Download(all-ipv4mask.tsv.gz)](https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/all-ipv4mask.tsv.gz)
 
+## Usage Example
+The following example demonstrates how to use ipset and iptables to only allow IPv4 addresses with the country code JP.
+
+### Installing ipset Command
+```bash
+apt install -y ipset
+```
+
+### Downloading and Setting Up all-ipv4cidr.tsv.gz
+```bash
+URL=https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/all-ipv4cidr.tsv.gz
+CIDRFILE=/var/lib/ipset/ipset_list
+TIMEOUT_DAYS=7
+SETNAME=allow_list
+
+find $CIDRFILE -type f -mtime +$TIMEOUT_DAYS -exec rm -f {} \;
+[[ -f $CIDRFILE ]] ||
+	curl -sL $URL |
+	zcat |
+	sed -n 's/^JP\t//p' \
+		>$CIDRFILE
+
+/usr/sbin/ipset create $SETNAME hash:net
+/usr/sbin/ipset flush $SETNAME 2>/tmp/ipset.err.log
+
+while read line; do
+	/usr/sbin/ipset add $SETNAME $line 2>>/tmp/ipset.err.log
+done <$CIDRFILE
+```
+
+### Configuring iptables to Allow Specific Ports
+```bash
+# UDP（26900-26903)
+/sbin/iptables -A INPUT -p udp --dport 26900:26903 -m set --match-set $SETNAME src -j ACCEPT
+/sbin/iptables -A INPUT -p udp --dport 26900:26903 -j DROP
+```
+
+## About Automatic Updates
+This IP list is automatically updated daily at 3 AM Japan time using GitHub Actions. It is recommended to regularly download the data to maintain the most current information.
+
+
+
 ## Forks Welcome
 This repository welcomes your contributions and cooperation. Forking and participating is encouraged to improve the project and to ensure the continuous update and maintenance of this important information resource. We believe that by having many people independently manage and update this list, the accuracy of the data and the speed of updates will be enhanced, benefiting the entire community. We hope that this project will continue with the help of not just myself, but all of you.
 

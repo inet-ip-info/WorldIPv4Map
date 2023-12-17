@@ -19,9 +19,46 @@ RIR統計ファイルは、地域インターネットレジストリ（[Regiona
 - CIDR表記: [ダウンロード(jp-ipv4cidr.txt.gz)](https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/jp-ipv4cidr.txt.gz)
 - サブネットマスク表記: [ダウンロード(jp-ipv4mask.txt.gz)](https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/jp-ipv4mask.txt.gz)
 
+## 使用例
+
+以下の例ではipsetとiptablesを利用してカントリーコード:JPのIPv4のみを許可します。 
+
+ipsetコマンドをインストールする
+```bash
+apt install -y ipset
+```
+
+all-ipv4cidr.tsv.gzをダウンロードしてカントリーコード"JP"のみのCIDRファイルを作成し、ipsetに読み込む
+```bash
+URL=https://github.com/inet-ip-info/WorldIPv4Map/releases/latest/download/all-ipv4cidr.tsv.gz
+CIDRFILE=/var/lib/ipset/ipset_list
+TIMEOUT_DAYS=7
+SETNAME=allow_list
+
+find $CIDRFILE -type f -mtime +$TIMEOUT_DAYS -exec rm -f {} \;
+[[ -f $CIDRFILE ]] ||
+	curl -sL $URL |
+	zcat |
+	sed -n 's/^JP\t//p' \
+		>$CIDRFILE
+
+/usr/sbin/ipset create $SETNAME hash:net
+/usr/sbin/ipset flush $SETNAME 2>/tmp/ipset.err.log
+
+while read line; do
+	/usr/sbin/ipset add $SETNAME $line 2>>/tmp/ipset.err.log
+done <$LISTFILE
+```
+
+iptalbesで特定のポートを$SETNAMEのipsetで許可する
+```bash
+# UDP（26900-26903)
+/sbin/iptables -A INPUT -p udp --dport 26900:26903 -m set --match-set $SETNAME src -j ACCEPT
+/sbin/iptables -A INPUT -p udp --dport 26900:26903 -j DROP
+```
+
 ## Forkの歓迎
 このリポジトリは、皆さんの貢献と協力を歓迎します。プロジェクトをより良くするため、また、この重要な情報リソースの継続的な更新と保守を確実にするため、Forkしての参加を奨励しています。多くの方々がこのリストを独自に管理・更新することで、データの正確性とアップデートの速度が向上し、コミュニティ全体に利益をもたらすことができると考えています。自分だけではなく、皆さんの手によってこのプロジェクトが継続し続けることを願っています。
-
 
 ## 参考サイト
 このコードを書く際に、[世界の国別 IPv4 アドレス割り当てリスト](http://nami.jp/ipv4bycc/)を大いに参考にさせていただきました。このサイトでは、IPアドレスリストの変換仕様が詳しく記載されており、コーディングの大きなヒントになりました。
