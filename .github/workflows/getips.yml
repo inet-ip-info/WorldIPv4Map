@@ -69,5 +69,6 @@ jobs:
         release-drop: true
         release-keep-count: 30
         release-drop-tag: true
+        draft-drop: false
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
